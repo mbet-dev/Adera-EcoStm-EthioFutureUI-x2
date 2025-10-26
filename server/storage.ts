@@ -1,6 +1,5 @@
-// Referenced from javascript_database blueprint - using DatabaseStorage
-import { db } from "./db";
-import { eq, desc, and, or } from "drizzle-orm";
+// Using Supabase client for database operations
+import { supabase } from "./db";
 import {
   users, partners, shops, items, parcels, parcelEvents, orders,
   transactions, messages, notifications, repositories,
@@ -79,99 +78,192 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user || undefined;
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    return data || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+    const { data, error } = await supabase
+      .from('users')
+      .insert(insertUser)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async updateUserBalance(id: string, balance: string): Promise<void> {
-    await db.update(users).set({ walletBalance: balance }).where(eq(users.id, id));
+    const { error } = await supabase
+      .from('users')
+      .update({ walletBalance: balance })
+      .eq('id', id);
+    if (error) throw error;
   }
 
   // Partners
   async getPartner(id: string): Promise<Partner | undefined> {
-    const [partner] = await db.select().from(partners).where(eq(partners.id, id));
-    return partner || undefined;
+    const { data } = await supabase
+      .from('partners')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getPartnersByCategory(category: string): Promise<Partner[]> {
-    return db.select().from(partners).where(eq(partners.category, category));
+    const { data, error } = await supabase
+      .from('partners')
+      .select('*')
+      .eq('category', category);
+    if (error) throw error;
+    return data || [];
   }
 
   async createPartner(insertPartner: InsertPartner): Promise<Partner> {
-    const [partner] = await db.insert(partners).values(insertPartner).returning();
-    return partner;
+    const { data, error } = await supabase
+      .from('partners')
+      .insert(insertPartner)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getAllPartners(): Promise<Partner[]> {
-    return db.select().from(partners);
+    const { data, error } = await supabase
+      .from('partners')
+      .select('*');
+    if (error) throw error;
+    return data || [];
   }
 
   // Shops
   async getShop(id: string): Promise<Shop | undefined> {
-    const [shop] = await db.select().from(shops).where(eq(shops.id, id));
-    return shop || undefined;
+    const { data } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getShopsByPartner(partnerId: string): Promise<Shop[]> {
-    return db.select().from(shops).where(eq(shops.partnerId, partnerId));
+    const { data, error } = await supabase
+      .from('shops')
+      .select('*')
+      .eq('partnerId', partnerId);
+    if (error) throw error;
+    return data || [];
   }
 
   async createShop(insertShop: InsertShop): Promise<Shop> {
-    const [shop] = await db.insert(shops).values(insertShop).returning();
-    return shop;
+    const { data, error } = await supabase
+      .from('shops')
+      .insert(insertShop)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   // Items
   async getItem(id: string): Promise<Item | undefined> {
-    const [item] = await db.select().from(items).where(eq(items.id, id));
-    return item || undefined;
+    const { data } = await supabase
+      .from('items')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getItemsByShop(shopId: string): Promise<Item[]> {
-    return db.select().from(items).where(eq(items.shopId, shopId));
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('shopId', shopId);
+    if (error) throw error;
+    return data || [];
   }
 
   async createItem(insertItem: InsertItem): Promise<Item> {
-    const [item] = await db.insert(items).values(insertItem).returning();
-    return item;
+    const { data, error } = await supabase
+      .from('items')
+      .insert(insertItem)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getAllItems(): Promise<Item[]> {
-    return db.select().from(items).where(eq(items.isActive, true));
+    const { data, error } = await supabase
+      .from('items')
+      .select('*')
+      .eq('isActive', true);
+    if (error) throw error;
+    return data || [];
   }
 
   // Parcels
   async getParcel(id: string): Promise<Parcel | undefined> {
-    const [parcel] = await db.select().from(parcels).where(eq(parcels.id, id));
-    return parcel || undefined;
+    const { data } = await supabase
+      .from('parcels')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getParcelByTrackingId(trackingId: string): Promise<Parcel | undefined> {
-    const [parcel] = await db.select().from(parcels).where(eq(parcels.trackingId, trackingId));
-    return parcel || undefined;
+    const { data } = await supabase
+      .from('parcels')
+      .select('*')
+      .eq('trackingId', trackingId)
+      .single();
+    return data || undefined;
   }
 
   async getParcelsBySender(senderId: string): Promise<Parcel[]> {
-    return db.select().from(parcels).where(eq(parcels.senderId, senderId)).orderBy(desc(parcels.createdAt));
+    const { data, error } = await supabase
+      .from('parcels')
+      .select('*')
+      .eq('senderId', senderId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   async getParcelsByDriver(driverId: string): Promise<Parcel[]> {
-    return db.select().from(parcels).where(eq(parcels.driverId, driverId)).orderBy(desc(parcels.createdAt));
+    const { data, error } = await supabase
+      .from('parcels')
+      .select('*')
+      .eq('driverId', driverId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   async createParcel(insertParcel: InsertParcel): Promise<Parcel> {
-    const [parcel] = await db.insert(parcels).values(insertParcel).returning();
-    return parcel;
+    const { data, error } = await supabase
+      .from('parcels')
+      .insert(insertParcel)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async updateParcelStatus(id: string, status: string, driverId?: string): Promise<void> {
@@ -179,81 +271,155 @@ export class DatabaseStorage implements IStorage {
     if (driverId) {
       updateData.driverId = driverId;
     }
-    await db.update(parcels).set(updateData).where(eq(parcels.id, id));
+    const { error } = await supabase
+      .from('parcels')
+      .update(updateData)
+      .eq('id', id);
+    if (error) throw error;
   }
 
   // Parcel Events
   async createParcelEvent(insertEvent: InsertParcelEvent): Promise<ParcelEvent> {
-    const [event] = await db.insert(parcelEvents).values(insertEvent).returning();
-    return event;
+    const { data, error } = await supabase
+      .from('parcelEvents')
+      .insert(insertEvent)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getParcelEvents(parcelId: string): Promise<ParcelEvent[]> {
-    return db.select().from(parcelEvents).where(eq(parcelEvents.parcelId, parcelId)).orderBy(desc(parcelEvents.createdAt));
+    const { data, error } = await supabase
+      .from('parcelEvents')
+      .select('*')
+      .eq('parcelId', parcelId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   // Orders
   async getOrder(id: string): Promise<Order | undefined> {
-    const [order] = await db.select().from(orders).where(eq(orders.id, id));
-    return order || undefined;
+    const { data } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .single();
+    return data || undefined;
   }
 
   async getOrdersByCustomer(customerId: string): Promise<Order[]> {
-    return db.select().from(orders).where(eq(orders.customerId, customerId)).orderBy(desc(orders.createdAt));
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('customerId', customerId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const [order] = await db.insert(orders).values(insertOrder).returning();
-    return order;
+    const { data, error } = await supabase
+      .from('orders')
+      .insert(insertOrder)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   // Transactions
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const [transaction] = await db.insert(transactions).values(insertTransaction).returning();
-    return transaction;
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert(insertTransaction)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getTransactionsByUser(userId: string): Promise<Transaction[]> {
-    return db.select().from(transactions).where(eq(transactions.userId, userId)).orderBy(desc(transactions.createdAt));
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('userId', userId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   // Messages
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const [message] = await db.insert(messages).values(insertMessage).returning();
-    return message;
+    const { data, error } = await supabase
+      .from('messages')
+      .insert(insertMessage)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getMessagesBetweenUsers(userId1: string, userId2: string): Promise<Message[]> {
-    return db.select().from(messages).where(
-      or(
-        and(eq(messages.senderId, userId1), eq(messages.receiverId, userId2)),
-        and(eq(messages.senderId, userId2), eq(messages.receiverId, userId1))
-      )
-    ).orderBy(desc(messages.createdAt));
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`senderId.eq.${userId1},receiverId.eq.${userId2}`)
+      .or(`senderId.eq.${userId2},receiverId.eq.${userId1}`)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   // Notifications
   async createNotification(insertNotification: InsertNotification): Promise<Notification> {
-    const [notification] = await db.insert(notifications).values(insertNotification).returning();
-    return notification;
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert(insertNotification)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getNotificationsByUser(userId: string): Promise<Notification[]> {
-    return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt));
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('userId', userId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 
   async markNotificationAsRead(id: string): Promise<void> {
-    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+    const { error } = await supabase
+      .from('notifications')
+      .update({ isRead: true })
+      .eq('id', id);
+    if (error) throw error;
   }
 
   // Repositories
   async createRepository(insertRepository: InsertRepository): Promise<Repository> {
-    const [repository] = await db.insert(repositories).values(insertRepository).returning();
-    return repository;
+    const { data, error } = await supabase
+      .from('repositories')
+      .insert(insertRepository)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 
   async getRepositoriesByUser(userId: string): Promise<Repository[]> {
-    return db.select().from(repositories).where(eq(repositories.userId, userId)).orderBy(desc(repositories.createdAt));
+    const { data, error } = await supabase
+      .from('repositories')
+      .select('*')
+      .eq('userId', userId)
+      .order('createdAt', { ascending: false });
+    if (error) throw error;
+    return data || [];
   }
 }
 

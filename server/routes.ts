@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertParcelSchema, insertOrderSchema, insertPartnerSchema, insertShopSchema, insertItemSchema } from "@shared/schema";
+import { pool } from "./db";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import QRCode from "qrcode";
@@ -385,7 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (data.type === 'message' && userId) {
           // Save message to database
           const savedMessage = await storage.createMessage({
-            senderId: userId,
+            senderId: userId!,
             receiverId: data.receiverId,
             parcelId: data.parcelId,
             text: data.text,
